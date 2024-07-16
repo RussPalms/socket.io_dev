@@ -1,5 +1,5 @@
 import { Server, type ServerOptions, Socket, type Transport } from "engine.io";
-import { randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { setTimeout, clearTimeout } from "node:timers";
 import { type IncomingMessage } from "node:http";
 import { type Packet } from "engine.io-parser";
@@ -18,7 +18,11 @@ type Brand<K, T> = K & { __brand: T };
 
 type NodeId = Brand<string, "NodeId">;
 type SessionId = Brand<string, "SessionId">;
-type RequestId = Brand<string, "RequestId">;
+type RequestId = Brand<number, "RequestId">;
+
+function randomId() {
+  return randomBytes(3).toString("hex");
+}
 
 enum MessageType {
   ACQUIRE_LOCK = 0,
@@ -149,9 +153,10 @@ interface ClusterEngineOptions {
 // @ts-expect-error onWebSocket() method is private in parent class
 export abstract class ClusterEngine extends Server {
   private readonly _opts: Required<ClusterEngineOptions>;
-  protected readonly _nodeId = randomUUID() as NodeId;
+  protected readonly _nodeId = randomId() as NodeId;
   private readonly _requests = new Map<RequestId, ClusterRequest>();
   private readonly _remoteTransports = new Map<SessionId, Transport>();
+  private _requestCount = 0;
 
   constructor(opts?: ServerOptions & ClusterEngineOptions) {
     super(opts);
@@ -426,7 +431,7 @@ export abstract class ClusterEngine extends Server {
     onSuccess: (senderId: NodeId) => void,
     onError: () => void
   ) {
-    const requestId = randomUUID() as RequestId;
+    const requestId = ++this._requestCount as RequestId;
 
     const timer = setTimeout(() => {
       this._requests.delete(requestId);
@@ -571,7 +576,7 @@ export abstract class ClusterEngine extends Server {
     debug("upgrade success");
     this._hookTransport(sid, transport, "read", senderId);
 
-    const requestId = randomUUID() as RequestId;
+    const requestId = ++this._requestCount as RequestId;
 
     const onSuccess = (takeOver: boolean, packets: Packet[]) => {
       if (takeOver) {

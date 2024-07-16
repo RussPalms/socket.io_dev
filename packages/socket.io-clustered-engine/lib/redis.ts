@@ -1,5 +1,5 @@
 import { ClusterEngine, type Message } from "./engine";
-import { encode, decode } from "notepack.io";
+import { encode, decode } from "@msgpack/msgpack";
 import { type ServerOptions } from "engine.io";
 import cluster from "node:cluster";
 import { randomUUID } from "node:crypto";
@@ -41,7 +41,7 @@ export function setupPrimaryWithRedis(
   SUBSCRIBE(subClient, channels, (buffer: Buffer) => {
     let message: Message & { _source?: string; _primaryId?: string };
     try {
-      message = decode(buffer);
+      message = decode(buffer) as Message;
     } catch (e) {
       debug("ignore malformed buffer");
       return;
@@ -147,7 +147,7 @@ export class RedisEngine extends ClusterEngine {
     SUBSCRIBE(subClient, channels, (buffer: Buffer) => {
       let message: Message & { _source?: string; _primaryId?: string };
       try {
-        message = decode(buffer);
+        message = decode(buffer) as Message;
       } catch (e) {
         debug("ignore malformed buffer");
         return;
@@ -170,7 +170,7 @@ export class RedisEngine extends ClusterEngine {
     message._source = MESSAGE_SOURCE;
 
     debug("publish message to channel %s", channel);
-    this._pubClient.publish(channel, encode(message));
+    this._pubClient.publish(channel, Buffer.from(encode(message)));
   }
 }
 

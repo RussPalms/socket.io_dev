@@ -6,11 +6,10 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
-    "@msgpack/msgpack": "^3.0.0-beta2",
+    "@msgpack/msgpack": "~2.8.0",
     "debug": "~4.3.3",
     "engine.io": "~6.6.0",
-    "engine.io-parser": "~5.2.3",
-    "notepack.io": "^3.0.1"
+    "engine.io-parser": "~5.2.3"
   },
   "scripts": {
     "compile": "rimraf ./dist && tsc",

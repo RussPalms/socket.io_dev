@@ -48,8 +48,11 @@ describe("redis", () => {
         engine2.close();
         engine3.close();
         httpServer1.close();
+        httpServer1.closeAllConnections();
         httpServer2.close();
+        httpServer2.closeAllConnections();
         httpServer3.close();
+        httpServer3.closeAllConnections();
 
         return Promise.all([
           pubClient.disconnect(),
@@ -143,20 +146,21 @@ describe("redis", () => {
       engine3.attach(httpServer3);
       httpServer3.listen(3002);
 
-      cleanup = () => {
+      cleanup = async () => {
         engine1.close();
         engine2.close();
         engine3.close();
         httpServer1.close();
+        httpServer1.closeAllConnections();
         httpServer2.close();
+        httpServer2.closeAllConnections();
         httpServer3.close();
+        httpServer3.closeAllConnections();
 
-        return Promise.all([
-          pubClient.disconnect(),
-          subClient1.disconnect(),
-          subClient2.disconnect(),
-          subClient3.disconnect(),
-        ]).then();
+        pubClient.disconnect();
+        subClient1.disconnect();
+        subClient2.disconnect();
+        subClient3.disconnect();
       };
     });
 

@@ -23,7 +23,16 @@ describe("cluster", () => {
   });
 
   afterEach((done) => {
-    cluster.disconnect(done);
+    for (const worker of Object.values(cluster.workers)) {
+      worker.kill();
+    }
+    function onExit() {
+      if (Object.keys(cluster.workers).length === 0) {
+        cluster.off("exit", onExit);
+        done();
+      }
+    }
+    cluster.on("exit", onExit);
   });
 
   it("should ping/pong", (done) => {

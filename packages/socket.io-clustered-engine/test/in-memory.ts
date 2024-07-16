@@ -51,8 +51,11 @@ describe("in-memory", () => {
     engine2.close();
     engine3.close();
     httpServer1.close();
+    httpServer1.closeAllConnections();
     httpServer2.close();
+    httpServer2.closeAllConnections();
     httpServer3.close();
+    httpServer3.closeAllConnections();
   });
 
   it("should work (read)", (done) => {
